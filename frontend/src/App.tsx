@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './redux/store';
 import { checkAuth } from './redux/slices/authSlice';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 // Layout components
 import Layout from './components/layout/Layout';
@@ -41,28 +43,30 @@ const App: React.FC = () => {
   }, [dispatch]);
   
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      
-      {/* Protected routes */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }>
-        <Route index element={<Dashboard />} />
-        <Route path="transactions" element={<Transactions />} />
-        <Route path="budgets" element={<Budgets />} />
-        <Route path="accounts" element={<Accounts />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="settings" element={<Settings />} />
-      </Route>
-      
-      {/* 404 route */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected routes */}
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="transactions" element={<Transactions />} />
+          <Route path="budgets" element={<Budgets />} />
+          <Route path="accounts" element={<Accounts />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        
+        {/* 404 route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </LocalizationProvider>
   );
 };
 
