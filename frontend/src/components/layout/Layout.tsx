@@ -19,7 +19,9 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-  useMediaQuery
+  useMediaQuery,
+  Badge,
+  Fade
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -32,12 +34,13 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
-  Savings as SavingsIcon
+  Savings as SavingsIcon,
+  Notifications as NotificationsIcon
 } from '@mui/icons-material';
 import { RootState } from '../../redux/store';
 import { logout } from '../../redux/slices/authSlice';
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
@@ -56,6 +59,10 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
     }),
     marginLeft: 0,
   }),
+  [theme.breakpoints.down('md')]: {
+    marginLeft: 0,
+    padding: theme.spacing(2),
+  },
 }));
 
 const AppBarStyled = styled(AppBar, {
@@ -85,6 +92,13 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: theme.palette.error.main,
+    color: theme.palette.error.contrastText,
+  },
+}));
+
 const Layout: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -96,6 +110,7 @@ const Layout: React.FC = () => {
   
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState<null | HTMLElement>(null);
   
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -111,6 +126,14 @@ const Layout: React.FC = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  
+  const handleNotificationMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setNotificationAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationAnchorEl(null);
   };
   
   const handleLogout = () => {
@@ -145,11 +168,92 @@ const Layout: React.FC = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
             Finance Tracker
           </Typography>
           {user && (
-            <div>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Tooltip title="Notifications">
+                <IconButton
+                  size="large"
+                  aria-label="notifications"
+                  aria-controls="menu-notifications"
+                  aria-haspopup="true"
+                  onClick={handleNotificationMenu}
+                  color="inherit"
+                  sx={{ mr: 1 }}
+                >
+                  <StyledBadge badgeContent={3} color="error">
+                    <NotificationsIcon />
+                  </StyledBadge>
+                </IconButton>
+              </Tooltip>
+              
+              <Menu
+                id="menu-notifications"
+                anchorEl={notificationAnchorEl}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(notificationAnchorEl)}
+                onClose={handleNotificationClose}
+                TransitionComponent={Fade}
+                PaperProps={{
+                  elevation: 3,
+                  sx: { 
+                    width: 320,
+                    maxHeight: 360,
+                    borderRadius: 2,
+                    mt: 1.5
+                  }
+                }}
+              >
+                <Box sx={{ p: 2, borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>Notifications</Typography>
+                </Box>
+                <MenuItem onClick={handleNotificationClose} sx={{ py: 1.5 }}>
+                  <Box>
+                    <Typography variant="body2" fontWeight={500} color="primary.main">
+                      Budget Alert
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Your "Groceries" budget is at 85% of its limit
+                    </Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem onClick={handleNotificationClose} sx={{ py: 1.5 }}>
+                  <Box>
+                    <Typography variant="body2" fontWeight={500} color="primary.main">
+                      New Transaction
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      A new transaction of $45.99 was recorded
+                    </Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem onClick={handleNotificationClose} sx={{ py: 1.5 }}>
+                  <Box>
+                    <Typography variant="body2" fontWeight={500} color="primary.main">
+                      Account Connected
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Your bank account was successfully connected
+                    </Typography>
+                  </Box>
+                </MenuItem>
+                <Box sx={{ p: 1.5, borderTop: '1px solid rgba(0, 0, 0, 0.06)', textAlign: 'center' }}>
+                  <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
+                    View all notifications
+                  </Typography>
+                </Box>
+              </Menu>
+              
               <Tooltip title="Account settings">
                 <IconButton
                   size="large"
@@ -159,7 +263,10 @@ const Layout: React.FC = () => {
                   onClick={handleMenu}
                   color="inherit"
                 >
-                  <Avatar sx={{ bgcolor: theme.palette.secondary.main }}>
+                  <Avatar sx={{ 
+                    bgcolor: theme.palette.secondary.main,
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                  }}>
                     {user.name.charAt(0)}
                   </Avatar>
                 </IconButton>
@@ -178,21 +285,44 @@ const Layout: React.FC = () => {
                 }}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
+                TransitionComponent={Fade}
+                PaperProps={{
+                  elevation: 3,
+                  sx: { 
+                    minWidth: 180,
+                    borderRadius: 2,
+                    mt: 1.5
+                  }
+                }}
               >
-                <MenuItem onClick={handleProfile}>
+                <Box sx={{ p: 2, textAlign: 'center', borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
+                  <Avatar sx={{ 
+                    width: 56, 
+                    height: 56, 
+                    mx: 'auto', 
+                    mb: 1,
+                    bgcolor: theme.palette.secondary.main,
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                  }}>
+                    {user.name.charAt(0)}
+                  </Avatar>
+                  <Typography variant="subtitle1" fontWeight={600}>{user.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{user.email}</Typography>
+                </Box>
+                <MenuItem onClick={handleProfile} sx={{ py: 1.5 }}>
                   <ListItemIcon>
                     <PersonIcon fontSize="small" />
                   </ListItemIcon>
-                  Profile
+                  <ListItemText primary="My Profile" />
                 </MenuItem>
-                <MenuItem onClick={handleLogout}>
+                <MenuItem onClick={handleLogout} sx={{ py: 1.5 }}>
                   <ListItemIcon>
                     <LogoutIcon fontSize="small" />
                   </ListItemIcon>
-                  Logout
+                  <ListItemText primary="Logout" />
                 </MenuItem>
               </Menu>
-            </div>
+            </Box>
           )}
         </Toolbar>
       </AppBarStyled>
@@ -211,29 +341,79 @@ const Layout: React.FC = () => {
         onClose={handleDrawerClose}
       >
         <DrawerHeader>
-          <Typography variant="h6" sx={{ flexGrow: 1, ml: 2 }}>
-            Finance Tracker
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, ml: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Finance Tracker
+            </Typography>
+          </Box>
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
         </DrawerHeader>
         <Divider />
-        <List>
-          {menuItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton 
-                selected={location.pathname === item.path}
-                onClick={() => navigate(item.path)}
-              >
-                <ListItemIcon>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        <Box sx={{ p: 2 }}>
+          <List>
+            {menuItems.map((item) => {
+              const isSelected = location.pathname === item.path;
+              
+              return (
+                <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton 
+                    selected={isSelected}
+                    onClick={() => navigate(item.path)}
+                    sx={{
+                      borderRadius: 2,
+                      py: 1,
+                      '&.Mui-selected': {
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'primary.dark',
+                        },
+                        '& .MuiListItemIcon-root': {
+                          color: 'white',
+                        },
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={item.text} 
+                      primaryTypographyProps={{ 
+                        fontWeight: isSelected ? 600 : 400,
+                      }} 
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
+        <Box sx={{ mt: 'auto', p: 2 }}>
+          <Divider sx={{ mb: 2 }} />
+          {user && (
+            <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1 }}>
+              <Avatar sx={{ 
+                width: 40, 
+                height: 40, 
+                bgcolor: theme.palette.secondary.main,
+                boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+              }}>
+                {user.name.charAt(0)}
+              </Avatar>
+              <Box sx={{ ml: 2 }}>
+                <Typography variant="body2" fontWeight={500}>
+                  {user.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {user.email}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </Box>
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
