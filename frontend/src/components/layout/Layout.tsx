@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import { RootState } from '../../redux/store';
 import { logout } from '../../redux/slices/authSlice';
+import { AnyAction } from '@reduxjs/toolkit';
 
 const drawerWidth = 260;
 
@@ -137,7 +138,7 @@ const Layout: React.FC = () => {
   };
   
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logout() as unknown as AnyAction);
     handleClose();
   };
   
